@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
 import re, sys, os
 from app import create_app
-from flask_pymongo import PyMongo
+from flask_sqlalchemy import SQLAlchemy  # Necesario para trabajar con PostgreSQL
+
 
 app = create_app()
-mongo = PyMongo(app)
+db = SQLAlchemy(app)  # Instancia de SQLAlchemy para PostgreSQL
 
 # Simulación de sesiones de usuarios
 user_sessions = {}
@@ -16,45 +17,49 @@ def validar_correo(email):
     return re.match(patron, email)
 
 
-# Función para guardar o actualizar datos del usuario en la base de datos MongoDB
+from app import db  # Usar SQLAlchemy de tu aplicación
+
+# Asumiendo que tienes un modelo de base de datos definido para Usuario
+from models import Usuario  # Importa el modelo que defina tu tabla de usuarios
+
 def guardar_o_actualizar_usuario(
     user_id, nombre=None, cedula=None, telefono=None, email=None, interes=None
 ):
     try:
-        # Acceder a la colección de usuarios en MongoDB
-        usuarios = mongo.db.usuarios
-
-        # Buscar si ya existe un usuario con el id dado
-        usuario = usuarios.find_one({"id_usuario": user_id})
+        # Verificar si el usuario ya existe en la base de datos
+        usuario = Usuario.query.filter_by(id_usuario=user_id).first()
 
         if usuario:
-            # Si existe, actualizar los campos disponibles
-            usuarios.update_one(
-                {"id_usuario": user_id},
-                {
-                    "$set": {
-                        "nombre": nombre,
-                        "cedula": cedula,
-                        "telefono": telefono,
-                        "email": email,
-                        "interes": interes,
-                    }
-                },
-            )
+            # Si el usuario existe, actualizar los campos
+            if nombre:
+                usuario.nombre = nombre
+            if cedula:
+                usuario.cedula = cedula
+            if telefono:
+                usuario.telefono = telefono
+            if email:
+                usuario.email = email
+            if interes:
+                usuario.interes = interes
+
+            db.session.commit()  # Guardar los cambios en la base de datos
+
         else:
-            # Si no existe, insertar un nuevo registro
-            usuarios.insert_one(
-                {
-                    "id_usuario": user_id,
-                    "nombre": nombre,
-                    "cedula": cedula,
-                    "telefono": telefono,
-                    "email": email,
-                    "interes": interes,
-                }
+            # Si el usuario no existe, crear un nuevo registro
+            nuevo_usuario = Usuario(
+                id_usuario=user_id,
+                nombre=nombre,
+                cedula=cedula,
+                telefono=telefono,
+                email=email,
+                interes=interes,
             )
+            db.session.add(nuevo_usuario)
+            db.session.commit()  # Guardar el nuevo registro
+
     except Exception as err:
         print(f"Error al guardar o actualizar el usuario: {err}")
+
 
 
 @app.route("/webhook", methods=["POST"])
