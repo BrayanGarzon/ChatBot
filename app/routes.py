@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from app import db
-from models import Usuario  # Importa el modelo de usuario
+from app.models import Usuario  # Importa el modelo de usuario
 
 main = Blueprint("main", __name__)
 
