@@ -1,0 +1,41 @@
+# Entorno virtual de Python
+venv/
+env/
+
+# Configuraciones locales y archivos sensibles
+*.env
+*.pyc
+__pycache__/
+instance/
+config.py
+
+# Archivos de logs
+*.log
+*.out
+*.err
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.sublime-project
+*.sublime-workspace
+
+# Dependencias de Python
+pip-log.txt
+pip-delete-this-directory.txt
+# Caché de pip
+__pycache__/
+*.pyo
+*.pyd
+
+# Archivos de despliegue
+*.sqlite3
+.DS_Store
+Procfile
+
+# Archivos y carpetas de compilación
+build/
+dist/
+.eggs/
+*.egg-info/
